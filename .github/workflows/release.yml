@@ -77,12 +77,12 @@ jobs:
         id: commit
         run: |
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "tag=v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.commit.outputs.tag }}
-          name: Release ${{ steps.commit.outputs.tag }}
+          name: ${{ steps.commit.outputs.tag }}
           files: artifacts/*
           generate_release_notes: true
           target_commitish: main
