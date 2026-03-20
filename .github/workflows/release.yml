@@ -55,12 +55,12 @@ jobs:
       - name: Build
         run: |
           mkdir -p build
-          dart compile exe bin/git_mail.dart -o build/${{ matrix.binary }}-${{ matrix.target }}
+          dart compile exe bin/git_mail.dart -o build/${{ matrix.target }}-${{ matrix.binary }}
       - name: Upload artifact
         uses: actions/upload-artifact@v7.0.0
         with:
-          name: binary-${{ matrix.target }}
-          path: build/${{ matrix.binary }}-${{ matrix.target }}
+          name: ${{ matrix.target }}-binary
+          path: build/${{ matrix.target }}-${{ matrix.binary }}
 
   release:
     name: Create Release
