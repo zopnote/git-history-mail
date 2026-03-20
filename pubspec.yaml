@@ -1,0 +1,13 @@
+name: git_history_mail
+description: Script that replaces an old mail across the commit history with a new one.
+executables:
+  git-mail: git_mail
+version: 1.0.0
+repository: https://github.com/zopnote/git-history-mail
+
+environment:
+  sdk: ^3.10.6
+
+dependencies:
+  path: ^1.9.0
+  stepflow: ^2.3.2
