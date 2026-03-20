@@ -1,0 +1,94 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    name: Check Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: dart-lang/setup-dart@v1
+      - name: Install dependencies
+        run: dart pub get
+      - name: Verify dependencies
+        run: dart pub get --offline
+      - name: Analyze code
+        run: dart analyze
+
+  build:
+    name: Build Executable
+    needs: check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x64
+            target: linux_amd64
+            binary: git-mail
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            target: linux_arm64
+            binary: git-mail
+          - os: windows-latest
+            arch: x64
+            target: windows_amd64
+            binary: git-mail.exe
+          - os: windows-latest
+            arch: arm64
+            target: windows_arm64
+            binary: git-mail.exe
+          - os: macos-latest
+            arch: arm64
+            target: macos_arm64
+            binary: git-mail
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: dart-lang/setup-dart@v1
+        with:
+          architecture: ${{ matrix.arch }}
+      - name: Install dependencies
+        run: dart pub get
+      - name: Build
+        run: |
+          mkdir -p build
+          dart compile exe bin/git_mail.dart -o build/${{ matrix.binary }}-${{ matrix.target }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: binary-${{ matrix.target }}
+          path: build/${{ matrix.binary }}-${{ matrix.target }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8.0.1
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Get commit info
+        id: commit
+        run: |
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "tag=v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.commit.outputs.tag }}
+          name: Release ${{ steps.commit.outputs.tag }}
+          files: artifacts/*
+          generate_release_notes: true
+          target_commitish: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
