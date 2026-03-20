@@ -1,5 +1,5 @@
 
-> ![img.png](.github/img.png)
+> <img alt="img.png" src=".github/img.png" width="600"/>\
 > When changing your email address linked to your GitHub account,
 your profile commit history may not be shown anymore.
 With this script the email in your commit history of a
